@@ -15,7 +15,7 @@ Fashion retailers often struggle with:
 
 ---
 
-## 🎯 Project Objectives
+## Project Objectives
 
 - Clean and preprocess raw sales, customer, and product data using Python  
 - Analyze product performance by category, gender, and month  
@@ -25,7 +25,7 @@ Fashion retailers often struggle with:
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer             | Tools Used                       |
 |------------------|----------------------------------|
@@ -37,7 +37,7 @@ Fashion retailers often struggle with:
 
 ---
 
-## 📊 Key Features
+## Key Features
 
 - ✅ Product performance analysis by category, gender, and time  
 - ✅ RFM segmentation to identify high-value vs. at-risk customers  
@@ -47,7 +47,7 @@ Fashion retailers often struggle with:
 
 ---
 
-## 🗂️ Folder Structure
+## Folder Structure
 
 ```text
 trendtracker-fashion-sales/
@@ -61,7 +61,7 @@ trendtracker-fashion-sales/
 
 ---
 
-## 🚀 Key Deliverables
+## Key Deliverables
 
 - Processed and merged customer, order, and product datasets  
 - Built customer segments using RFM logic for campaign targeting  
@@ -70,7 +70,7 @@ trendtracker-fashion-sales/
 
 ---
 
-## 📈 Project Status
+## Project Status
 
 - ✅ Data pipeline & dashboard – Complete  
 - ✅ RFM segmentation – Implemented  
@@ -78,7 +78,7 @@ trendtracker-fashion-sales/
 
 ---
 
-## 📬 Contact
+## Contact
 
 Made with ❤️ by [@shanusaras](https://github.com/shanusaras)  
 Connect with me to collaborate or discuss analytics use cases in retail and fashion tech.
