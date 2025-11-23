@@ -4,6 +4,9 @@ import seaborn as sns
 import streamlit as st
 from babel.numbers import format_currency
 
+st.set_page_config(page_title="Fashion Sales Dashboard", page_icon="👕")
+st.sidebar.header('Time Range')
+
 sns.set_style('darkgrid')
 
 # Setting up DataFrames
@@ -63,7 +66,7 @@ def create_rfm_df(df):
     
     return rfm_df
 
-all_df = pd.read_csv('https://raw.githubusercontent.com/nurkholiqaganihafid/Online_Fashion_Data_Analysis/main/dashboard/all_data.csv')
+all_df = pd.read_csv('https://raw.githubusercontent.com/shanusaras/TrendTracker-Fashion_Sales_and_Customers/main/dashboard/all_data.csv')
 
 datetime_columns = ['order_date', 'delivery_date']
 all_df.sort_values(by='order_date', inplace=True)
@@ -71,7 +74,6 @@ all_df.reset_index(inplace=True)
  
 for column in datetime_columns:
     all_df[column] = pd.to_datetime(all_df[column])
-
 
 # Create Filter Components by Date
 min_date = all_df['order_date'].min()
@@ -81,7 +83,7 @@ with st.sidebar:
     st.image('https://github.com/dicodingacademy/assets/raw/main/logo.png')
 
     start_date, end_date = st.date_input(
-        label='Rentang waktu',
+        label='Select Date Range',
         min_value=min_date,
         max_value=max_date,
         value=[min_date, max_date]
@@ -110,39 +112,26 @@ col1, col2 = st.columns(2)
 # Displays the order total
 with col1:
     total_orders = daily_orders_df.order_count.sum()
-    st.metric('#Total Orders', value=total_orders)
+    st.metric('#Total Orders', value=f"{total_orders:,}")
 
 # Displays the revenue total
 with col2:
-    total_revenue = format_currency(daily_orders_df.revenue.sum(), 'AUD', locale='es_CO')
+    total_revenue = format_currency(daily_orders_df.revenue.sum(), 'AUD', locale='en_US')
     st.metric('#Total Revenue', value=total_revenue)
 
-# Displays the number of daily orders
-if min_date <= daily_orders_df['order_date'].max() - pd.DateOffset(days=60):
-    fig, ax = plt.subplots(figsize=(16, 8))
-    ax.plot(
-        daily_orders_df['order_date'],
-        daily_orders_df['order_count'],
-        marker='o',
-        linewidth=2,
-        color='#90CAF9'
-    )
-    ax.tick_params(axis='y', labelsize=18)
-    ax.tick_params(axis='x', labelsize=15)
+# Daily orders chart
+fig, ax = plt.subplots(figsize=(16, 8))
+ax.plot(
+    daily_orders_df['order_date'],
+    daily_orders_df['order_count'],
+    marker='o',
+    linewidth=2,
+    color='#90CAF9'
+)
+ax.tick_params(axis='y', labelsize=18)
+ax.tick_params(axis='x', labelsize=15)
 
-    st.pyplot(fig)
-else:
-    fig, ax = plt.subplots(figsize=(16, 8))
-    ax.plot(
-        daily_orders_df['order_date'],
-        daily_orders_df['order_count'],
-        marker='o',
-        linewidth=2,
-        color='#90CAF9'
-    )
-    ax.tick_params(axis='y', labelsize=18)
-    ax.tick_params(axis='x', labelsize=15)
-
+if len(daily_orders_df) <= 60:
     for i in range(len(daily_orders_df)):
         plt.text(
             daily_orders_df['order_date'][i],
@@ -153,7 +142,7 @@ else:
             fontsize=8
         )
 
-    st.pyplot(fig)
+st.pyplot(fig)
 
 # Displays the sales performance of each product
 st.subheader('Best & Worst Performing Products')
@@ -162,7 +151,7 @@ fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(28, 8))
 
 colors = ['#90CAF9', '#D3D3D3', '#D3D3D3', '#D3D3D3', '#D3D3D3']
 
-# First plot
+# Best Products
 sns.barplot(
     x='quantity_x',
     y='product_name',
@@ -172,10 +161,9 @@ sns.barplot(
 )
 ax[0].set_ylabel(None)
 ax[0].set_xlabel('Number of Sales', fontsize=28, labelpad=15)
-ax[0].set_title('Best Performing Product', loc='center', fontsize=34, pad=20)
-ax[0].tick_params(axis='y', labelsize=30)
-ax[0].tick_params(axis='x', labelsize=26)
+ax[0].set_title('Best Performing Product', fontsize=34)
 
+# Add values
 for i in range(len(sum_order_items_df.head(5))):
     ax[0].text(
         sum_order_items_df['quantity_x'].iloc[i],
@@ -185,7 +173,7 @@ for i in range(len(sum_order_items_df.head(5))):
         fontsize=20
     )
 
-# Second plot
+# Worst Products
 asc_sum_order = sum_order_items_df.sort_values(
     by='quantity_x', ascending=True
 ).head(5)
@@ -197,14 +185,9 @@ sns.barplot(
     palette=colors,
     ax=ax[1]
 )
-ax[1].set_ylabel(None)
-ax[1].set_xlabel('Number of Sales', fontsize=28, labelpad=15)
 ax[1].invert_xaxis()
-ax[1].yaxis.set_label_position('right')
 ax[1].yaxis.tick_right()
-ax[1].set_title('Worst Performing Product', loc='center', fontsize=34, pad=20)
-ax[1].tick_params(axis='y', labelsize=30)
-ax[1].tick_params(axis='x', labelsize=26)
+ax[1].set_title('Worst Performing Product', fontsize=34)
 
 for i, value in enumerate(asc_sum_order['quantity_x']):
     ax[1].text(
@@ -218,7 +201,7 @@ for i, value in enumerate(asc_sum_order['quantity_x']):
 
 st.pyplot(fig)
 
-# Displays customer demographics
+# Customer Demographics
 st.subheader('Customer Demographics')
 
 col1, col2 = st.columns(2)
@@ -226,7 +209,6 @@ col1, col2 = st.columns(2)
 # By Gender
 with col1:
     desc_bygender_df = bygender_df.sort_values(by='customer_count', ascending=False)
-    
     fig, ax = plt.subplots(figsize=(20, 10))
     sns.barplot(
         data=desc_bygender_df,
@@ -235,24 +217,14 @@ with col1:
         palette=colors,
         ax=ax
     )
-    
-    ax.set_title('Number of Customer by Gender', loc='center', fontsize=40, pad=20)
-    ax.set_ylabel(None)
-    ax.set_xlabel(None)
-    ax.tick_params(axis='x', labelsize=38)
-    ax.tick_params(axis='y', labelsize=32)
-    
+    ax.set_title('Number of Customers by Gender', fontsize=40)
+
     for i, value in enumerate(desc_bygender_df['customer_count']):
-        ax.text(
-            i,
-            value,
-            value,
-            ha='center',
-            fontsize=26
-        )
+        ax.text(i, value, value, ha='center', fontsize=26)
+
     st.pyplot(fig)
 
-# By Age
+# By Age Group
 with col2:
     fig, ax = plt.subplots(figsize=(20, 10))
     colors_ = ['#D3D3D3', '#90CAF9', '#D3D3D3']
@@ -264,26 +236,20 @@ with col2:
         order=['Youth', 'Adults', 'Seniors'],
         palette=colors_,
         ax=ax
-        )
-    
+    )
+
     for p in bar.patches:
-        bar.annotate(f'{int(p.get_height())}', 
+        bar.annotate(f'{int(p.get_height())}',
                     (p.get_x() + p.get_width() / 2., p.get_height()),
-                    xytext=(0, 1),
-                    textcoords='offset points',
-                    ha='center', va='bottom',
+                    ha='center',
                     fontsize=26)
-        
-    ax.set_title('Number of Customer by Age', loc='center', fontsize=40, pad=20)
-    ax.set_ylabel(None)
-    ax.set_xlabel(None)
-    ax.tick_params(axis='x', labelsize=36)
-    ax.tick_params(axis='y', labelsize=32)
-    
+
+    ax.set_title('Number of Customers by Age', fontsize=40)
+
     st.pyplot(fig)
 
 # By State
-colors_ = ['#90CAF9', '#D3D3D3', '#D3D3D3', '#D3D3D3', '#D3D3D3', '#D3D3D3', '#D3D3D3', '#D3D3D3']
+colors_ = ['#90CAF9'] + ['#D3D3D3'] * 7
 desc_bystate_df = bystate_df.sort_values(by='customer_count', ascending=False)
 
 fig, ax = plt.subplots(figsize=(20, 10))
@@ -294,121 +260,67 @@ sns.barplot(
     palette=colors_,
     ax=ax
 )
-ax.set_title('Number of Customer by States', loc='center', fontsize=30, pad=16)
-ax.set_ylabel(None)
-ax.set_xlabel(None)
-ax.tick_params(axis='y', labelsize=24)
-ax.tick_params(axis='x', labelsize=20)
+ax.set_title('Number of Customers by State', fontsize=30)
 
 for i, value in enumerate(desc_bystate_df['customer_count']):
-    ax.text(
-        x=value,
-        y=i,
-        s=value,
-        va='center',
-        fontsize=18
-    )
+    ax.text(value, i, value, va='center', fontsize=18)
 
 st.pyplot(fig)
 
-# Displays RFM (Recency, Frequency, & Monetary) Analysis
-st.subheader('Best Customer Based on RFM Parameters')
+# RFM Analysis
+st.subheader('Best Customers Based on RFM Parameters')
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
     avg_recency = round(rfm_df.recency.mean(), 1)
-    st.metric('#Average Recency (days)', value=avg_recency)
+    st.metric('#Average Recency (days)', value=f"{avg_recency:,}")
  
 with col2:
     avg_frequency = round(rfm_df.frequency.mean(), 2)
-    st.metric('#Average Frequency', value=avg_frequency)
+    st.metric('#Average Frequency', value=f"{avg_frequency:,}")
 
 with col3:
-    avg_frequency = format_currency(rfm_df.monetary.mean(), 'AUD', locale='es_CO') 
-    st.metric('#Average Monetary', value=avg_frequency)
-
+    avg_monetary = format_currency(rfm_df.monetary.mean(), 'AUD', locale='en_US')
+    st.metric('#Average Monetary', value=avg_monetary)
 
 fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(30, 10))
 colors = ['#90CAF9']
 
-# First plot
-asc_recency_rfm_df = rfm_df.sort_values(by='recency', ascending=True).head(5)
+# Recency
+asc_recency = rfm_df.sort_values(by='recency').head(5)
 sns.barplot(
     y='recency',
     x='customer_id',
-    data=asc_recency_rfm_df,
+    data=asc_recency,
     palette=colors,
-    order=asc_recency_rfm_df['customer_id'],
+    order=asc_recency['customer_id'],
     ax=ax[0]
 )
-ax[0].set_ylabel(None)
-ax[0].set_xlabel('customer_id', fontsize=28, labelpad=10)
-ax[0].set_title('By Recency (days)', loc='center', fontsize=32, pad=15)
-ax[0].tick_params(axis ='x', labelsize=24)
-ax[0].tick_params(axis ='y', labelsize=20)
+ax[0].set_title('By Recency (days)', fontsize=32)
 
-for i, value in enumerate(asc_recency_rfm_df['recency']):
-    ax[0].text(
-        x=i,
-        y=value,
-        s=value,
-        ha='center',
-        fontsize=18
-    )
-
-# Second plot
-desc_frequency_rfm_df = rfm_df.sort_values(by='frequency', ascending=False).head(5)
+# Frequency
+desc_frequency = rfm_df.sort_values(by='frequency', ascending=False).head(5)
 sns.barplot(
     y='frequency',
     x='customer_id',
-    data=desc_frequency_rfm_df,
+    data=desc_frequency,
     palette=colors,
-    order=desc_frequency_rfm_df['customer_id'],
+    order=desc_frequency['customer_id'],
     ax=ax[1]
 )
-ax[1].set_ylabel(None)
-ax[1].set_xlabel('customer_id', fontsize=28, labelpad=10)
-ax[1].set_title('By Frequency', loc='center', fontsize=32, pad=15)
-ax[1].tick_params(axis='x', labelsize=22)
-ax[1].tick_params(axis='y', labelsize=20)
+ax[1].set_title('By Frequency', fontsize=32)
 
-for i, value in enumerate(desc_frequency_rfm_df['frequency']):
-    ax[1].text(
-        x=i,
-        y=value,
-        s=value,
-        ha='center',
-        fontsize=18
-
-    )
-
-# Third plot
-desc_monetary_rfm_df = rfm_df.sort_values(by='monetary', ascending=False).head(5)
+# Monetary
+desc_monetary = rfm_df.sort_values(by='monetary', ascending=False).head(5)
 sns.barplot(
     y='monetary',
     x='customer_id',
-    data=desc_monetary_rfm_df,
+    data=desc_monetary,
     palette=colors,
-    order=desc_monetary_rfm_df['customer_id'],
+    order=desc_monetary['customer_id'],
     ax=ax[2]
 )
-ax[2].set_ylabel(None)
-ax[2].set_xlabel('customer_id', fontsize=28, labelpad=10)
-ax[2].set_title('By Monetary', loc='center', fontsize=32, pad=15)
-ax[2].tick_params(axis='x', labelsize=22)
-ax[2].tick_params(axis='y', labelsize=20)
-
-for i, value in enumerate(desc_monetary_rfm_df['monetary']):
-    ax[2].text(
-        x=i,
-        y=value,
-        s=value,
-        ha='center',
-        fontsize=18
-    )
+ax[2].set_title('By Monetary', fontsize=32)
 
 st.pyplot(fig)
-
-
-st.caption('Copyright (c) Dicoding 2023 | Author: Nurkholiq Agani Hafid')
