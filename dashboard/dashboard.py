@@ -6,28 +6,35 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
-from babel.numbers import format_currency
+from babel.numbers import format_currency # for currency formatting
 import matplotlib
 matplotlib.rcParams['figure.dpi'] = 100
 
+# Page configuration and styling
 st.set_page_config(page_title="TrendTracker — Fashion Dashboard", page_icon="👕", layout="wide")
 sns.set_style("darkgrid")
 
 # ------------------------------
 # Utility helpers
 # ------------------------------
+
+# Formats numbers as AUD currency
 def format_aud(value):
     try:
         return format_currency(value, 'AUD', locale='en_US')
     except Exception:
         return f"AUD {value:,.2f}"
 
+# Computes Average Order Value (AOV)
+# General calc: Total Revenue/ No of Orders
 def compute_aov(df):
     if df.empty:
         return 0.0
     order_vals = df.groupby("order_id", as_index=False).agg({"total_price": "sum"})
     return order_vals["total_price"].mean() if not order_vals.empty else 0.0
 
+# Computes % of customers who made more than one purchase--> customers who made more than one unique order
+# general calc: (No of repeat customers / Total customers) * 100
 def compute_repeat_purchase_rate(df):
     if df.empty:
         return 0.0
@@ -36,6 +43,7 @@ def compute_repeat_purchase_rate(df):
     total_customers = purchases.shape[0]
     return (repeat / total_customers) if total_customers > 0 else 0.0
 
+# Convert matplotlib figure to a downloadable img (PNG)
 def fig_to_bytes(fig):
     buf = io.BytesIO()
     fig.savefig(buf, format='png', bbox_inches='tight')
@@ -106,19 +114,24 @@ def create_rfm_df(df):
 # ------------------------------
 DATA_URL = 'https://raw.githubusercontent.com/shanusaras/TrendTracker-Fashion_Sales_and_Customers/main/dashboard/all_data.csv'
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600) # Caches the data for 1 hour (3600 seconds) to improve performance.
+# Prevents re-fetching and reprocessing the data on every interaction.
 def load_data(url):
     df = pd.read_csv(url)
     for col in ['order_date', 'delivery_date']:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors='coerce')
+            # error= 'coerce' --> Coerce invalid parsing (dates) to NaT (Not a Time) instead of crashing
     df.sort_values('order_date', inplace=True)
     df.reset_index(drop=True, inplace=True)
     return df
 
 all_df = load_data(DATA_URL)
+# all_df is used throughout the dashboard
 
 # Ensure expected columns present
+# If a column is missing, it adds it with NaN values.
+# Prevents errors when functions try to access these columns later.
 for c in ["quantity_x", "total_price", "order_id", "customer_id", "product_name", "gender", "age_group", "state", "delivery_date"]:
     if c not in all_df.columns:
         all_df[c] = np.nan
