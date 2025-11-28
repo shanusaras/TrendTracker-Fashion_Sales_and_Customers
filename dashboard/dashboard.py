@@ -175,8 +175,12 @@ show_values_on_bars = st.sidebar.checkbox("Show values on bars", value=True)
 # ------------------------------
 start_ts = pd.to_datetime(start_date)
 end_ts = pd.to_datetime(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+#  Ensures the end date includes the full day.
 
 mask = (all_df['order_date'] >= start_ts) & (all_df['order_date'] <= end_ts)
+# combines all the filters
+# mask is a boolean Series where True means the row matches all filters
+# Each condition (state_sel, gender_sel etc.) refines the mask
 if state_sel:
     mask &= all_df['state'].isin(state_sel)
 if gender_sel:
@@ -186,6 +190,7 @@ if age_sel:
 if product_search:
     mask &= all_df['product_name'].str.contains(product_search, case=False, na=False)
 
+# Apply filters to df
 main_df = all_df.loc[mask].copy()
 
 # min order total: compute order totals then filter
@@ -305,8 +310,8 @@ with left_col:
         cohort_counts = cohort_df.groupby(['cohort_month','period_number'])['customer_id'].nunique().reset_index()
         cohort_pivot = cohort_counts.pivot(index='cohort_month', columns='period_number', values='customer_id')
         if cohort_pivot is not None and not cohort_pivot.empty:
-            cohort_sizes = cohort_pivot.iloc[:,0]
-            retention = cohort_pivot.divide(cohort_sizes, axis=0).fillna(0)
+            cohort_sizes = cohort_pivot.iloc[:,0] # no of customers in each cohort
+            retention = cohort_pivot.divide(cohort_sizes, axis=0).fillna(0) # Convert to percentages
             fig_cohort, ax_cohort = plt.subplots(figsize=(12, max(4, 0.5*len(retention))))
             sns.heatmap(retention, annot=True, fmt=".0%", cmap="YlGnBu", ax=ax_cohort)
             ax_cohort.set_title("Cohort Retention (by months since first purchase)")
@@ -370,6 +375,8 @@ with left_col:
 
     # 5) RFM segmentation simple visualization
     st.subheader("RFM Segments (quintiles)")
+    # Quintile==> divides a dataset into 5 equal groups, each representing 20% of the data
+
     if not rfm_df.empty:
         rfm_score = rfm_df.copy()
         # For recency: lower recency is better so invert scores: smallest recency -> highest rank
@@ -378,12 +385,16 @@ with left_col:
             rfm_score['r_quintile'] = 5 - rfm_score['r_quintile']  # invert so 5 is best
         except Exception:
             rfm_score['r_quintile'] = 3
+        
+        # For frequency: Higher is better
         try:
             rfm_score['f_quintile'] = pd.qcut(rfm_score['frequency'].rank(method='first'), 5, labels=False, duplicates='drop') + 1
             rfm_score['m_quintile'] = pd.qcut(rfm_score['monetary'], 5, labels=False, duplicates='drop') + 1
         except Exception:
             rfm_score['f_quintile'] = 3
             rfm_score['m_quintile'] = 3
+        
+        # Combining scores into RFM score.
         rfm_score['rfm_score'] = rfm_score['r_quintile'].astype(int).astype(str) + rfm_score['f_quintile'].astype(int).astype(str) + rfm_score['m_quintile'].astype(int).astype(str)
         seg_counts = rfm_score.groupby('rfm_score').size().reset_index(name='count').sort_values(by='count', ascending=False)
         if not seg_counts.empty:
