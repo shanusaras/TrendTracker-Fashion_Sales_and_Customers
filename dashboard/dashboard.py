@@ -299,19 +299,53 @@ with left_col:
     st.subheader("Cohort Retention (Monthly)")
     if not main_df.empty:
         cohort_df = main_df[['customer_id','order_date']].copy()
+
+        # converts the order_date to the first day of the month (eg. "2025-11-29" --> "2025-11-01")
         cohort_df['order_month'] = cohort_df['order_date'].dt.to_period('M').dt.to_timestamp()
+
+        # Finding , per customer_id--> first purchase date and extract the month--> cohort month
+        # "cohort month"--> the month they first became a customer
         first_order = cohort_df.groupby('customer_id')['order_date'].min().reset_index()
         first_order['cohort_month'] = first_order['order_date'].dt.to_period('M').dt.to_timestamp()
+
+        # left Joining cohort_df + first_order on--> customer_id
+        # so for each customer, we have cohort month, every order month
         cohort_df = cohort_df.merge(first_order[['customer_id','cohort_month']], on='customer_id', how='left')
-        # period number: months since cohort month
+
+        # period number: how many months? -->  since cohort month (customer's first purchase)
+        # That is, each order month - cohort month
+        # Example: If first purchase was in January and current order is in March, period_number = 2.
         cohort_df['period_number'] = (
             cohort_df['order_month'].dt.to_period('M').astype(int) - cohort_df['cohort_month'].dt.to_period('M').astype(int)
         )
+
+        # cohort counts= per cohort , per period number--> how many unique customers
+        # shows customer retention over time for each cohort
         cohort_counts = cohort_df.groupby(['cohort_month','period_number'])['customer_id'].nunique().reset_index()
+        
+        # now pivot table, rows--> cohorts (by month), columns--> period number (no of months since first purchase)
+        # values--> customer_id (unique customers)
         cohort_pivot = cohort_counts.pivot(index='cohort_month', columns='period_number', values='customer_id')
+        
+        # 
         if cohort_pivot is not None and not cohort_pivot.empty:
+            # cohort size--> Per cohort month --> no of customers in the first period number column. 
+            # This is the starting size of each cohort
             cohort_sizes = cohort_pivot.iloc[:,0] # no of customers in each cohort
+            
+            # Dividing each number in the row by that cohort'starting size, replacing Nan with 0
+            # Example: (Before division)
+               # cohort_month	0 (month 0)	1 (month 1)	2 (month 2)
+               #  Jan-2025	       100	         80	       60
+               #  Feb-2025	       150	         90	       NaN
+            # After division: (example)
+              #  cohort_month	0	 1	    2
+              #  Jan-2025	  1.0	 0.8	0.6
+              #  Feb-2025     1.0	 0.6	NaN
+            # So, Jan-2025 cohort retained 80% of customers in the first month, 60% in the second month.
             retention = cohort_pivot.divide(cohort_sizes, axis=0).fillna(0) # Convert to percentages
+            
+            # visualizing as heatmap
             fig_cohort, ax_cohort = plt.subplots(figsize=(12, max(4, 0.5*len(retention))))
             sns.heatmap(retention, annot=True, fmt=".0%", cmap="YlGnBu", ax=ax_cohort)
             ax_cohort.set_title("Cohort Retention (by months since first purchase)")
@@ -396,6 +430,11 @@ with left_col:
         
         # Combining scores into RFM score.
         rfm_score['rfm_score'] = rfm_score['r_quintile'].astype(int).astype(str) + rfm_score['f_quintile'].astype(int).astype(str) + rfm_score['m_quintile'].astype(int).astype(str)
+
+        # How to interpret RFM score
+        # eg 1) If RFM score= 555, then it is the best customer (recent, frequent, high spenders)
+        # eg 2) If RFM score= 111, then it is the worst customer- Least valuable customers (inactive, rare, low spenders)
+        # eg 3) If RFM score= 351, then They buy often but low spending per order (low monetary)
         seg_counts = rfm_score.groupby('rfm_score').size().reset_index(name='count').sort_values(by='count', ascending=False)
         if not seg_counts.empty:
             fig_seg, ax_seg = plt.subplots(figsize=(8,3))
