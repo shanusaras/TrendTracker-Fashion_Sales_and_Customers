@@ -428,6 +428,7 @@ with left_col:
     if not rfm_df.empty:
         rfm_score = rfm_df.copy()
         # For recency: lower recency is better so invert scores: smallest recency -> highest rank
+        # # We subtract from 5 to make higher scores better
         try:
             rfm_score['r_quintile'] = pd.qcut(rfm_score['recency'], 5, labels=False, duplicates='drop')  # 0..4
             rfm_score['r_quintile'] = 5 - rfm_score['r_quintile']  # invert so 5 is best
@@ -435,6 +436,7 @@ with left_col:
             rfm_score['r_quintile'] = 3
         
         # For frequency: Higher is better
+        # # Using .rank(method='first') to handle ties
         try:
             rfm_score['f_quintile'] = pd.qcut(rfm_score['frequency'].rank(method='first'), 5, labels=False, duplicates='drop') + 1
             rfm_score['m_quintile'] = pd.qcut(rfm_score['monetary'], 5, labels=False, duplicates='drop') + 1
@@ -449,16 +451,26 @@ with left_col:
         # eg 1) If RFM score= 555, then it is the best customer (recent, frequent, high spenders)
         # eg 2) If RFM score= 111, then it is the worst customer- Least valuable customers (inactive, rare, low spenders)
         # eg 3) If RFM score= 351, then They buy often but low spending per order (low monetary)
+
+        # Count customers in each RFM segment and sprt by count
         seg_counts = rfm_score.groupby('rfm_score').size().reset_index(name='count').sort_values(by='count', ascending=False)
         if not seg_counts.empty:
+            # barplot of top 10 most common RFM segments
             fig_seg, ax_seg = plt.subplots(figsize=(8,3))
             sns.barplot(data=seg_counts.head(10), x='rfm_score', y='count', ax=ax_seg)
             ax_seg.set_title("Top RFM score counts")
             st.pyplot(fig_seg)
+
             # revenue share by segment
+
+            # Calculate total revenue per customer
             cust_rev = main_df.groupby('customer_id', as_index=False).total_price.sum().rename(columns={'total_price':'customer_revenue'})
+            # Merge wtih RFM scores
             merged = rfm_score.merge(cust_rev, on='customer_id', how='left')
+            # Group by RFM score and calculate total revenue
             seg_rev = merged.groupby('rfm_score')['customer_revenue'].sum().reset_index().sort_values(by='customer_revenue', ascending=False)
+            
+            # Display the top revenue-generating segments
             st.write("Top segments by revenue (sample):")
             if not seg_rev.empty:
                 st.dataframe(seg_rev.assign(customer_revenue=lambda df: df['customer_revenue'].map(lambda x: format_aud(x))))
@@ -467,6 +479,8 @@ with left_col:
     else:
         st.info("RFM data not available for segmentation.")
 
+
+# QUICK ACTIONS & EXPORTS section
 with right_col:
     st.subheader("Quick Actions & Exports")
     st.write(f"Filtered rows: **{len(main_df):,}**")
@@ -490,11 +504,13 @@ with right_col:
 
     st.markdown("---")
     st.subheader("Download Charts")
+    # `fig_to_bytes()` : Function to convert matplotlib figures to downloadable PNGs.
     st.download_button("Download Orders chart (PNG)", data=fig_to_bytes(fig), file_name="orders_over_time.png", mime="image/png")
     st.download_button("Download Top products (PNG)", data=fig_to_bytes(fig2), file_name="top_products.png", mime="image/png")
 
     st.markdown("---")
     st.subheader("Auto insights (sample)")
+    # Calculate top 3 states by total revenue
     top_states = main_df.groupby("state").total_price.sum().reset_index().sort_values(by="total_price", ascending=False).head(3)
     if not top_states.empty:
         for i, row in top_states.iterrows():
