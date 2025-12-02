@@ -331,7 +331,8 @@ with left_col:
         if cohort_pivot is not None and not cohort_pivot.empty:
             # cohort size--> Per cohort month --> no of customers in the first period number column. 
             # This is the starting size of each cohort
-            cohort_sizes = cohort_pivot.iloc[:,0] # no of customers in each cohort
+            cohort_sizes = cohort_pivot.iloc[:,0] # no of customers in each cohort (# Get first column (period 0))
+
             
             # Dividing each number in the row by that cohort'starting size, replacing Nan with 0
             # Example: (Before division)
@@ -360,6 +361,19 @@ with left_col:
 
     # 2) Monthly AOV trend
     st.subheader("AOV Trend (Monthly)")
+    
+    # 1. Per order_id, per order_month--> find total price (since per order_id may contain many order items)
+    # 2. Extract month --> from order_date
+    # 3. now, per month--> find mean of total price
+    # Example:- If, 
+    #    order_id    order_date       total_price      month
+    #        101    2025-01-01          150        2025-01-01
+    #        102    2025-01-01          200        2025-01-01
+    #        103    2025-02-01          150        2025-02-01
+    #    Then, per month (may contain many orders)--> find mean of total price
+    #        month          total_price
+    #     2025-01-01        175.0       # (150 + 200) / 2 = 175
+    #     2025-02-01        150.0       # Only one order in February
     if not main_df.empty:
         orders_tot = main_df.groupby(['order_id', pd.Grouper(key='order_date', freq='M')])['total_price'].sum().reset_index()
         orders_tot['month'] = orders_tot['order_date'].dt.to_period('M').dt.to_timestamp()
