@@ -151,25 +151,42 @@ trendtracker-fashion-sales/
 
 ## 7. Feature Highlights
 
-### 🔍 Data Analysis
-- Detailed **category & sub-category performance**
-- Gender-wise & region-wise customer behavior
-- Monthly **sales, revenue & AOV trends**
-- Repeat rate & order frequency analysis
+### Data Analysis
+- **Sales & Revenue Trends** with monthly AOV (Average Order Value) tracking
+- **Customer Demographics** analysis by age group, gender, and state
+- **Product Performance** tracking with top-selling items and categories
+- **Cohort Analysis** to understand customer retention patterns
 
-### 👥 Customer Segmentation (RFM)
-- Recency scoring  
-- Frequency scoring  
-- Monetary scoring  
-- Customer segments including **Champions, Loyal, At-Risk**, and more  
-- Business recommendations for each segment
+### 🔍 Advanced Analytics
+- **RFM (Recency, Frequency, Monetary) Analysis**
+  - Customer segmentation using quintile scoring (1-5) for each RFM dimension
+  - Visual representation of customer distribution across segments
+  - Identification of high-value customer segments
+  - Revenue analysis by customer segment
 
-### 📈 Retail Dashboard (Streamlit)
-- Interactive filters (gender, category, date)  
-- Key business metrics (Total Revenue, Total Orders, AOV, Repeat Rate)  
-- Trend visualizations using Plotly  
-- Product performance & customer insights  
-- Downloadable Excel report option  
+### 📈 Interactive Dashboard (Streamlit)
+- **Dynamic Filtering**
+  - Date range selection
+  - State, gender, and age group filters
+  - Product search functionality
+  - Minimum order value filter
+
+- **Key Metrics**
+  - Total Orders and Revenue
+  - Average Order Value (AOV)
+  - Repeat Purchase Rate
+  - Median Delivery Time
+
+- **Visualizations**
+  - Cohort retention heatmaps
+  - Monthly AOV trends
+  - CLTV (Customer Lifetime Value) distribution
+  - Delivery time analysis
+
+### 📤 Data Export
+- Download filtered data in CSV or Excel format
+- Export charts as PNG images
+- Auto-generated insights and recommendations
 
 📌 **Live Dashboard:** *Add your Streamlit URL here*  
 📌 **Screenshots:** Add images in `/docs/screenshots/` and embed them here.
