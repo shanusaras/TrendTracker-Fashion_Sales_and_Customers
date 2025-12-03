@@ -217,7 +217,7 @@ repeat_rate = compute_repeat_purchase_rate(main_df)
 # ------------------------------
 # Header + KPI band
 # ------------------------------
-st.title("✨ TrendTracker — Fashion Dashboard (EN) ✨")
+st.title("TrendTracker — Fashion Dashboard (EN)")
 k1, k2, k3, k4 = st.columns([1.6, 1.6, 1.6, 1.6])
 k1.metric("Total Orders", f"{total_orders:,}")
 k2.metric("Total Revenue", format_aud(total_revenue))

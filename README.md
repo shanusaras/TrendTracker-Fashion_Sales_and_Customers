@@ -188,8 +188,26 @@ trendtracker-fashion-sales/
 - Export charts as PNG images
 - Auto-generated insights and recommendations
 
-📌 **Live Dashboard:** *Add your Streamlit URL here*  
-📌 **Screenshots:** Add images in `/docs/screenshots/` and embed them here.
+📌 **Live Dashboard:** 📌 **Live Dashboard:** [View Interactive Dashboard](https://trendtracker-fashionsalesandcustomersgit-vqqy739uxmedveg2gg5bh.streamlit.app/)
+
+📌 **Dashboard Preview:**
+<p align="center">
+  <img src="docs/screenshots/dashboard_overview.png" alt="Dashboard Overview" width="80%">
+  <br>
+  <em>Figure 1: Interactive Dashboard Overview</em>
+</p>  
+
+<p align="center">
+  <img src="docs/screenshots/rfm_analysis.png" alt="RFM Analysis" width="80%">
+  <br>
+  <em>Figure 2: Customer Segmentation with RFM Analysis</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/cohort_analysis.png" alt="Cohort Analysis" width="80%">
+  <br>
+  <em>Figure 3: Customer Retention Cohort Analysis</em>
+</p>
 
 ---
 
