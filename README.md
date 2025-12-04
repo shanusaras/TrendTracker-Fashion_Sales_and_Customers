@@ -95,6 +95,11 @@ trendtracker-fashion-sales/
 │   ├── products.csv       # Product catalog
 │   ├── sales.csv          # Sales transactions
 │   └── Legend.txt         # Data dictionary
+├── docs/                   # Documentation and screenshots
+│   └── screenshots/       # Dashboard screenshots
+│       ├── dashboard_overview.png
+│       ├── rfm_analysis.png
+│       └── cohort_analysis.png
 ├── assets/                # Static resources
 │   └── logo.png          # Application logo
 ├── Online_Fashion_Data_Analysis.ipynb  # Jupyter notebook for EDA
@@ -147,6 +152,34 @@ trendtracker-fashion-sales/
 | price_per_unit | Float | Price per unit at time of sale |
 | quantity | Integer | Number of units sold |
 | total_price | Float | Total transaction amount (price_per_unit * quantity) |
+
+### Main Dataset (`dashboard/all_data.csv`)
+| Column | Type | Description |
+|--------|------|-------------|
+| order_id | String | Unique order identifier |
+| order_date | DateTime | When the order was placed |
+| customer_id | String | Unique customer identifier |
+| customer_name | String | Name of the customer |
+| product_id | String | Unique product identifier |
+| product_name | String | Name of the product |
+| category | String | Product category (e.g., Clothing, Accessories) |
+| sub_category | String | Product sub-category (e.g., Tops, Dresses) |
+| price | Float | Unit price of the product |
+| quantity | Integer | Number of units ordered |
+| total_price | Float | Total price (price × quantity) |
+| delivery_date | DateTime | When the order was delivered |
+| gender | String | Customer's gender (M/F/Other) |
+| age | Integer | Customer's age |
+| state | String | Customer's state of residence |
+| payment_method | String | Payment method used (Credit Card, UPI, etc.) |
+
+### RFM Analysis
+| Metric | Description |
+|--------|-------------|
+| recency | Days since last purchase |
+| frequency | Total number of transactions |
+| monetary | Total amount spent |
+| rfm_score | Combined RFM score (1-5, where 5 is best) |
 
 
 ## 7. Feature Highlights
@@ -291,7 +324,6 @@ trendtracker-fashion-sales/
 - [ ] Customer churn prediction model
 - [ ] Personalized product recommendations
 - [ ] Predictive inventory management
-- [ ] Customer lifetime value forecasting
 
 ### Technical Improvements
 - [ ] Real-time data integration
@@ -299,10 +331,10 @@ trendtracker-fashion-sales/
 - [ ] User authentication and role-based access
 - [ ] API endpoints for data access
 
-### Deployment
-- [ ] CI/CD pipeline setup
-- [ ] Cloud deployment (AWS/GCP/Azure)
-- [ ] Performance optimization for large datasets
+### Performance
+- [ ] Optimize for large datasets
+- [ ] Add caching for faster dashboard loading
+- [ ] Implement data refresh scheduling
 
 ---
 
